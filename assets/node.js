@@ -5,4 +5,4 @@ module.exports	= {
 	path	: objPath
 };
 
-//=include main.js
+//=include path.js
