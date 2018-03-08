@@ -49,13 +49,15 @@ function objPath(options){
 	var input	= options.input,
 		path	= options.path,
 		childkey= options.childkey || null,
-		template= options.template || {},
 		upsert	= options.upsert || !!options.template;
 	// chilkey and template
 		if(
 			childkey !== null
 			&& upsert === true
-			&& !template.hasOwnProperty(childkey)
+			&& !(
+				options.template
+				&& options.template.hasOwnProperty(childkey)
+			)
 		)
 			throw new Error('When "childkey" and "template" or "upsert" are set, "childkey" is required inside "template"');
 	// path
@@ -67,10 +69,12 @@ function objPath(options){
 		parentNode		= null,
 		parentObj		= null,
 		attrKey,
-		tmpValue;
+		tmpValue,
+		pos,
+		len;
 	// get the maximum accessible path
-	for(var indx=0, len = path.length; indx < len, ++indx){
-		attrKey		= path[indx];
+	for(pos=0, len = path.length; pos < len, ++pos){
+		attrKey		= path[pos];
 		parentNode	= currentNode;
 
 		// get the parentObj
@@ -108,10 +112,16 @@ function objPath(options){
 			currentNode	: currentNode,
 			parentNode	: parentNode,
 			parentObj	: parentObj,
-			attrKey		: attrKey
+			attrKey		: attrKey,
+			template	: options.template || {}
 		}
 	};
 	Object.setPrototypeOf(result, PATH_PROTO);
+
+	// upsert
+	if(upsert && indx < path.length)
+		result.build(); // make the path
+	return result;
 }
 
 // consts
@@ -135,4 +145,28 @@ const PATH_PROTO = {
 
 	get resolved(){return this[PATH_RESOLVED_SYMB]},
 	get exists(){return this[PATH_RESOLVED_SYMB]},
+
+	build	: function(){
+		var private	= this[PATH_PRIVATE],
+			currentNode	= private.currentNode,
+			parentObj	= private.parentObj,
+			path		= private.path,
+			template	= private.template,
+			childkey	= private.childkey,
+			attrKey,
+			parentNode;
+		for(var pos	= private.pos, len = path.length; ++pos){
+			attrKey		= path[pos];
+			parentNode	= currentNode;
+
+			// get the parentObj
+			if(childkey === null)
+				parentObj	= parentNode;
+			else {
+				if(!parentNode.hasOwnProperty(childkey))
+					break;
+				parentObj	= parentNode[childkey];
+			}
+		}
+	}
 };
