@@ -10,6 +10,7 @@
     "gulp": "^3.9.1",
     "gulp-include": "^2.3.1",
     "gulp-minify": "^2.1.0",
+    "gulp-remove-empty-lines": "^0.1.0",
     "gulp-rename": "^1.2.2"
   },
   "name": "coredigix-object-path",
@@ -28,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/coredigix/coredigix-object-path/issues"
   },
-  "homepage": "https://github.com/coredigix/coredigix-object-path#readme"
+  "homepage": "https://github.com/coredigix/coredigix-object-path#readme",
+  "dependencies": {
+    "coredigix-string": "^1.0.0"
+  }
 }

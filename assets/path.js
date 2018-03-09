@@ -49,7 +49,8 @@ function objPath(options){
 	var input	= options.input,
 		path	= options.path,
 		childkey= options.childkey || null,
-		upsert	= options.upsert || !!options.template;
+		template= options.template || null,
+		upsert	= options.upsert || template != null;
 	// chilkey and template
 		if(
 			childkey !== null
@@ -62,101 +63,25 @@ function objPath(options){
 			throw new Error('When "childkey" and "template" or "upsert" are set, "childkey" is required inside "template"');
 	// path
 	if(typeof path === 'string')
-		path	= strUtils.split(path, '.').map(e => strUtils.split(e, ','));
-	else if(!Array.isArray(path)) throw new Error('uncorrect path.');
+		path	= strUtils.split(path, '.');
+	else if(
+		Array.isArray(path)
+		&& path.every(ele => typeof ele === 'string' || typeof ele === 'number')
+	){}
+	else throw new Error('uncorrect path.');
 
 	var currentNode		= input,
 		parentNode		= null,
 		parentObj		= null,
 		attrKey,
 		tmpValue,
-		pos,
-		len;
-	// get the maximum accessible path
-	for(pos=0, len = path.length; pos < len, ++pos){
-		attrKey		= path[pos];
-		parentNode	= currentNode;
-
-		// get the parentObj
-		if(childkey === null)
-			parentObj	= parentNode;
-		else {
-			if(!parentNode.hasOwnProperty(childkey))
-				break;
-			parentObj	= parentNode[childkey];
-		}
-
-		// get the next child
-		if(Array.isArray(parentObj)){
-			if(isNaN(attrKey))
-				throw new Error('Illegal attribute "' + attrKey +'" for an array');
-			if(typeof attrKey === 'string')
-				attrKey	= parseInt(attrKey);
-			if(attrKey < 0){
-				attrKey	+= parentObj.length;
-				if(attrKey < 0) break;
-			}
-			else if(attrKey > parentObj.length)
-				break;
-		}
-		else if(parentObj.hasOwnProperty(attrKey) === false)
-			break;
-		currentNode	= parentObj[attrKey];
-	}
-	// result
-	var result	= {
-		[PATH_RESOLVED_SYMB]	: indx >= path.length,
-		[PATH_PRIVATE]			: {
-			path		: path,
-			pos			: pos,
-			currentNode	: currentNode,
-			parentNode	: parentNode,
-			parentObj	: parentObj,
-			attrKey		: attrKey,
-			template	: options.template || {}
-		}
-	};
-	Object.setPrototypeOf(result, PATH_PROTO);
-
-	// upsert
-	if(upsert && indx < path.length)
-		result.build(); // make the path
-	return result;
-}
-
-// consts
-const	PATH_RESOLVED_SYMB	= Symbol(),
-		PATH_PRIVATE		= Symbol();
-
-/** Prototype */
-const PATH_PROTO = {
-	assertResolved	: function(){
-		if(this[PATH_RESOLVED_SYMB] !== true)
-			throw new Error('Path not resolved');
-	},
-	get value(){
-		this.assertResolved();
-		return this[PATH_PRIVATE].currentNode;
-	},
-	set value(vl){
-		this.assertResolved();
-		this[PATH_PRIVATE].parentObj[attrKey]	= value;
-	}
-
-	get resolved(){return this[PATH_RESOLVED_SYMB]},
-	get exists(){return this[PATH_RESOLVED_SYMB]},
-
-	build	: function(){
-		var private	= this[PATH_PRIVATE],
-			currentNode	= private.currentNode,
-			parentObj	= private.parentObj,
-			path		= private.path,
-			template	= private.template,
-			childkey	= private.childkey,
-			attrKey,
-			parentNode;
-		for(var pos	= private.pos, len = path.length; ++pos){
-			attrKey		= path[pos];
+		pos				= 0,
+		len				= path.length,
+		resolved;
+	// path
+	function seekPath(){
+		for(; pos < len; ++pos){
+			attrKey		= path[pos]; console.log('----- ', attrKey)
 			parentNode	= currentNode;
 
 			// get the parentObj
@@ -166,7 +91,53 @@ const PATH_PROTO = {
 				if(!parentNode.hasOwnProperty(childkey))
 					break;
 				parentObj	= parentNode[childkey];
+				if(!parentObj && upsert === true) // create child collection if not exists
+					parentObj	= parentNode[childkey] = (template === null? {} : objUtils.clone(template[childkey]));
 			}
+			console.log('--- current obj : ', parentObj)
+			// get the next child
+			if(Array.isArray(parentObj)){
+				if(isNaN(attrKey))
+					throw new Error('Illegal attribute "' + attrKey +'" for an array');
+				if(typeof attrKey === 'string')
+					attrKey	= parseInt(attrKey);
+				if(attrKey < 0){
+					attrKey	+= parentObj.length;
+					if(attrKey < 0) throw new Error('Array out of bound');
+				}
+				else if(attrKey > parentObj.length && upsert === false)
+					break;
+			}
+			// else if(parentObj.hasOwnProperty(attrKey) === false){
+			// 	break;
+			// }
+			// create child if not exists
+			if(parentObj[attrKey])
+				currentNode	= parentObj[attrKey]
+			else if(upsert === true)
+				currentNode	= parentObj[attrKey] = (template === null ? {} : objUtils.clone(template));
+			else break;
 		}
+		resolved	= pos >= path.length;
 	}
-};
+	// get the maximum accessible path
+	seekPath();
+	// result
+	var result	= {
+		build	: function(){
+			upsert	= true;
+			return seekPath();
+		},
+		get value(){ return resocurrentNode },
+		set value(vl){
+			if(resolved) parentObj[attrKey]	= vl;
+			else throw new Error('Path not resolved');
+		},
+
+		get resolved(){ return resolved },
+		get exists(){ return resolved },
+
+		get path(){ return resolved ? path : path.slice(0, pos); }
+	};
+	return result;
+}
