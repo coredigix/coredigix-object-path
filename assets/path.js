@@ -51,16 +51,6 @@ function objPath(options){
 		childkey= options.childkey || null,
 		template= options.template || null,
 		upsert	= options.upsert || template != null;
-	// chilkey and template
-		if(
-			childkey !== null
-			&& upsert === true
-			&& !(
-				options.template
-				&& options.template.hasOwnProperty(childkey)
-			)
-		)
-			throw new Error('When "childkey" and "template" or "upsert" are set, "childkey" is required inside "template"');
 	// path
 	if(typeof path === 'string')
 		path	= strUtils.split(path, '.');
@@ -80,21 +70,31 @@ function objPath(options){
 		resolved;
 	// path
 	function seekPath(){
+		// chilkey and template
+			if(
+				childkey !== null
+				&& upsert === true
+				&& !(
+					options.template
+					&& options.template.hasOwnProperty(childkey)
+				)
+			)
+				throw new Error('When "childkey" and "template" or "upsert" are set, "childkey" is required inside "template"');
 		for(; pos < len; ++pos){
-			attrKey		= path[pos]; console.log('----- ', attrKey)
+			attrKey		= path[pos];
 			parentNode	= currentNode;
 
 			// get the parentObj
 			if(childkey === null)
 				parentObj	= parentNode;
 			else {
-				if(!parentNode.hasOwnProperty(childkey))
-					break;
+				if(!parentNode[childkey]){
+					if(upsert === true)
+						parentNode[childkey] = (template === null? {} : objUtils.deepClone(template[childkey]));
+					else break;
+				}
 				parentObj	= parentNode[childkey];
-				if(!parentObj && upsert === true) // create child collection if not exists
-					parentObj	= parentNode[childkey] = (template === null? {} : objUtils.clone(template[childkey]));
 			}
-			console.log('--- current obj : ', parentObj)
 			// get the next child
 			if(Array.isArray(parentObj)){
 				if(isNaN(attrKey))
@@ -115,7 +115,7 @@ function objPath(options){
 			if(parentObj[attrKey])
 				currentNode	= parentObj[attrKey]
 			else if(upsert === true)
-				currentNode	= parentObj[attrKey] = (template === null ? {} : objUtils.clone(template));
+				currentNode	= parentObj[attrKey] = (template === null ? {} : objUtils.deepClone(template));
 			else break;
 		}
 		resolved	= pos >= path.length;
@@ -128,7 +128,7 @@ function objPath(options){
 			upsert	= true;
 			return seekPath();
 		},
-		get value(){ return resocurrentNode },
+		get value(){ return currentNode },
 		set value(vl){
 			if(resolved) parentObj[attrKey]	= vl;
 			else throw new Error('Path not resolved');
