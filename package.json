@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "scripts": {
     "test": "node test"
@@ -13,11 +13,11 @@
     "gulp-remove-empty-lines": "^0.1.0",
     "gulp-rename": "^1.2.2"
   },
-  "name": "coredigix-object-path",
+  "name": "coredigix-object-utils",
   "description": "object path",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coredigix/coredigix-object-path.git"
+    "url": "git+https://github.com/coredigix/coredigix-object-utils.git"
   },
   "keywords": [
     "object",
@@ -27,9 +27,9 @@
     "children"
   ],
   "bugs": {
-    "url": "https://github.com/coredigix/coredigix-object-path/issues"
+    "url": "https://github.com/coredigix/coredigix-object-utils/issues"
   },
-  "homepage": "https://github.com/coredigix/coredigix-object-path#readme",
+  "homepage": "https://github.com/coredigix/coredigix-object-utils#readme",
   "dependencies": {
     "coredigix-string": "^1.0.0"
   }

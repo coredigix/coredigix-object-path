@@ -1,9 +1,8 @@
-//=require cloner.js
-//=require path.js
-//=require checks.js
 
 const objUtils	= {
 	path		: objPath,
+
+	seek		: _objSeek,
 
 	clone		: function(obj){ return cloner.shallow.copy(obj); },
 	deepClone	: function(obj){ return cloner.deep.copy(obj); },
@@ -13,3 +12,9 @@ const objUtils	= {
 	isPlainObj	: isPlainObj,
 	isEmpty		: isEmpty
 };
+
+//=require cloner.js
+//=require path.js
+//=require checks.js
+//=require seeker.js
+

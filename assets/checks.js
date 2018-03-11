@@ -2,7 +2,8 @@
 
 function isPlainObj(obj){
 	return typeof obj === 'object'
-			&& obj.__proto__ === Object.prototype;
+			&& obj !== null
+			&& obj.constructor === Object;
 }
 
 /** isEmpty */
