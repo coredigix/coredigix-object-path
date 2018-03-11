@@ -75,10 +75,11 @@ function _objSeekMode1(obj, cb){
 			currentNodeMeta		= nodeMap.get(currentNode);
 			// child meta data
 			childNodeMeta	= {
-				key		: childName,
-				node	: childNode,
-				parent	: currentNode,
-				path	: currentNodeMeta.path.concat(childName)
+				key			: childName,
+				node		: childNode,
+				parent		: currentNode,
+				parentMeta	: currentNodeMeta,
+				path		: currentNodeMeta.path.concat(childName)
 			};
 			// not plain object
 			if(typeof childNode !== 'object' || childNode === null){}
@@ -141,10 +142,11 @@ function _objSeekMode2(obj, cb, childKey){
 			currentNodeMeta		= nodeMap.get(currentNode);
 			// child meta data
 			childNodeMeta	= {
-				key		: childIndex,
-				node	: childNode,
-				parent	: currentNode,
-				path	: currentNodeMeta.path.concat(childKey, childIndex)
+				key			: childIndex,
+				node		: childNode,
+				parent		: currentNode,
+				parentMeta	: currentNodeMeta,
+				path		: currentNodeMeta.path.concat(childKey, childIndex)
 			};
 			// not plain object
 			if(typeof childNode !== 'object' || childNode === null){}
