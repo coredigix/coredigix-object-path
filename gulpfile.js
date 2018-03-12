@@ -7,7 +7,7 @@ var rename	= require("gulp-rename");
 var voidLine= require('gulp-remove-empty-lines');
 
 gulp.task('node', () => {
-	gulp.src('assets/node.js')
+	return gulp.src('assets/node.js')
 		.pipe(include({
 			hardFail: true
 		}))
@@ -20,4 +20,16 @@ gulp.task('node', () => {
 gulp.task('default', () => {
 	console.log('please use: ');
 	console.log("\tgulp node\t\t: compile for node js");
+});
+
+
+gulp.task('brighter', () => {
+	return gulp.src('assets/brighter.js')
+		.pipe(include({
+			hardFail: true
+		}))
+		.pipe(rename('object-utils.js'))
+		.pipe(voidLine())
+		// .pipe(minify())
+		.pipe(gulp.dest("../brighterjs/assets/plugins/"));
 });
