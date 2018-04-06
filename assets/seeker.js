@@ -25,6 +25,9 @@
  * 		]
  * 	}
  * }
+ * //TODO returns compiled version to quick execute other callBacks
+ * // if no callBack, returns compiled version (lineer version of the array)
+ * //TODO add function toList that will convert the tree to a list
  */
 
 function _objSeek(obj, cb, childKey = null){
@@ -105,7 +108,6 @@ function _objSeekMode1(obj, cb){
 }
 
 function _objSeekMode2(obj, cb, childKey){
-	const EMPTY_ARRAY	= {length: 0}; // do not make this global to avoid some user mistakes
 
 	var nodeMap		= new WeakMap(),
 		avoidCycle	= new WeakSet(),
@@ -129,14 +131,15 @@ function _objSeekMode2(obj, cb, childKey){
 	// go through childs
 	do {
 		// get child nodes
+		if(Reflect.has(currentNode, childKey) === false)
+			continue;
 		childNodes	= currentNode[childKey];
-		if(!childNodes)
-			childNodes	= EMPTY_ARRAY;
-		else if(!Array.isArray(childNodes))
+		if(!Array.isArray(childNodes))
 			childNodes	= [childNodes];
 
 		// iterate inside childNodes
 		for (var childIndex = 0, len = childNodes.length; childIndex < len; ++childIndex) {
+			
 			childNode	= childNodes[childIndex];
 			// last node metadata
 			currentNodeMeta		= nodeMap.get(currentNode);
