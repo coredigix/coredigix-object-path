@@ -119,14 +119,15 @@ function _objSeek(input, cb, childKey){
 		compileArr.push(inputMeta);
 		rootLoop: do {
 			parentNode	= parentNodeMeta.node;
+			partialPath	= parentNodeMeta.path;
 			if(childKey === undefined){ // form 1
-				partialPath	= parentNodeMeta.path;
+				// partialPath	= parentNodeMeta.path;
 				childNodes	= parentNode;
 			} else { // form 2
 				if(Reflect.has(parentNode, childKey) === false)
 					continue;
 				childNodes	= parentNode[childKey];
-				partialPath	= parentNodeMeta.path.concat(childKey);
+				// partialPath	= parentNodeMeta.path.concat(childKey);
 			}
 			// get child nodes
 			if(Array.isArray(childNodes)){
