@@ -34,11 +34,20 @@ var obj2 = {
 			]
 		},
 		{
-			kk:'ll'
+			kk:'ll',
+			nodes: {
+				k1: 'hello',
+				k2: {
+					nodes: {
+						k21: "yes",
+						k22: 86
+					}
+				}
+			}
 		}
 	]
 };
 
 objUtils.seek(obj2, meta => {
 	console.log('>> key: ', meta.key, ', path: ', meta.path);
-}, 'nodes');
+}, 'nodes');//
