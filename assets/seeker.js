@@ -144,29 +144,5 @@ function _objSeek(input, cb, childKey){
 		else throw err;
 	}
 	// return compiled version of the tree
-	var result= {
-		arr 	: compileArr
-	};
-	Object.setPrototypeOf(result, SEEK_PROTOTYPE);
-	return result;
+	return compileArr;
 }
-
-
-// usefull function for the compiled version of the tree
-const SEEK_PROTOTYPE	= {
-	// execute a callback on the compiled version of the tree
-	exec	: function(cb){
-		var arr = this.toArray();
-		for(var i=0, len = arr.length; i< len; ++i){
-			if(cb(arr[i]) === false)
-				break;
-		}
-		return this;
-	},
-	// convert tree to equivalente array
-	toArray : function(){
-		if(this.arr === false)
-			throw new Error('The preprocessing was skiped.');
-		return this.arr;
-	}
-};
