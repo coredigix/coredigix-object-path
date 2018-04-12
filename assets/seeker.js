@@ -4,6 +4,10 @@
  * (could depends on parents results or not)
  * @param {Object} input tree object
  * @param {function} cb the callback to execute on each node
+ *                      when cb returns false: skip the process
+ *                      when cb returns -1	: exclude this node from compiled version
+ *                      when cb returns -2	: exclude subtree
+ *                      when cb returns -3	: exclude node & do not fetch subtree
  * @param {String|undefined} childKey usefull when the tree has mode2, see modes in examples
  *
  * Mode1:
@@ -70,6 +74,7 @@ function _objSeek(input, cb, childKey){
 
 	// compile version
 	var compileArr = [];
+	var avoidNode, avoidSubtree, cbResult;
 	// iteration cb
 	var iterationCb = (key => {
 		node	= childNodes[key];
@@ -80,25 +85,37 @@ function _objSeek(input, cb, childKey){
 			parentMeta	: parentNodeMeta,
 			path		: partialPath.concat(i)
 		};
+		// callBack
+		if(cb !== undefined){
+			cbResult = cb(nodeMeta);
+			if(cbResult === false)
+				throw 'skiped';
+			avoidNode	= cbResult === -1 || cbResult === -3;
+			avoidSubtree= cbResult === -2 || cbResult === -3;
+		}
+		else{
+			avoidNode	= false;
+			avoidSubtree= false;
+		}
 		// store in compiled array
-		compileArr.push(nodeMeta);
+		if(avoidNode === false)
+			compileArr.push(nodeMeta);
 		// not plain object
 		if(typeof node !== 'object' || node === null){}
 		// cycle
 		else if(avoidCycle.has(node))
 			nodeMeta.cycle	= true;
 		// new
-		else {
+		else{
 			avoidCycle.add(node); // avoid cyclic
 			// set as the next for the prev
-			nodeMap.get(lastNode).next	= nodeMeta; // set as next to prev
-			// save currentNode metadata
-			nodeMap.set(node, nodeMeta);
-			lastNode	= node;
+			if(avoidSubtree === false){
+				nodeMap.get(lastNode).next	= nodeMeta; // set as next to prev
+				// save currentNode metadata
+				nodeMap.set(node, nodeMeta);
+				lastNode	= node;
+			}
 		}
-		// callBack
-		if(cb !== undefined && cb(nodeMeta) === false)
-			throw 'skiped';
 	});
 	// compile and execute
 	try{
